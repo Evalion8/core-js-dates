@@ -198,8 +198,19 @@ function getCountWeekendsInMonth(month, year) {
  * Date(2024, 0, 31) => 5
  * Date(2024, 1, 23) => 8
  */
-function getWeekNumberByDate(/* date */) {
-  throw new Error('Not implemented');
+function getWeekNumberByDate(date) {
+  const tempDate = new Date(date);
+
+  tempDate.setDate(tempDate.getDate() + 3 - ((tempDate.getDay() + 6) % 7));
+
+  const firstThursday = new Date(tempDate.getFullYear(), 0, 1);
+  firstThursday.setDate(
+    firstThursday.getDate() + (3 - ((firstThursday.getDay() + 6) % 7))
+  );
+
+  const dayOfYear = (tempDate - firstThursday) / 86400000;
+
+  return Math.ceil((dayOfYear + 1) / 7);
 }
 
 /**
@@ -228,8 +239,13 @@ function getNextFridayThe13th(/* date */) {
  * Date(2024, 5, 1) => 2
  * Date(2024, 10, 10) => 4
  */
-function getQuarter(/* date */) {
-  throw new Error('Not implemented');
+function getQuarter(date) {
+  const month = date.getMonth();
+
+  if (month < 3) return 1;
+  if (month < 6) return 2;
+  if (month < 9) return 3;
+  return 4;
 }
 
 /**
@@ -250,8 +266,42 @@ function getQuarter(/* date */) {
  * { start: '01-01-2024', end: '15-01-2024' }, 1, 3 => ['01-01-2024', '05-01-2024', '09-01-2024', '13-01-2024']
  * { start: '01-01-2024', end: '10-01-2024' }, 1, 1 => ['01-01-2024', '03-01-2024', '05-01-2024', '07-01-2024', '09-01-2024']
  */
-function getWorkSchedule(/* period, countWorkDays, countOffDays */) {
-  throw new Error('Not implemented');
+function getWorkSchedule(period, countWorkDays, countOffDays) {
+  const { start, end } = period;
+  const startDate = new Date(start.split('-').reverse().join('-'));
+  const endDate = new Date(end.split('-').reverse().join('-'));
+
+  const workSchedule = [];
+  const currentDate = startDate;
+  let isWorkDay = true;
+
+  while (currentDate <= endDate) {
+    const formattedDate = currentDate.toLocaleDateString('en-GB');
+
+    if (isWorkDay) {
+      workSchedule.push(formattedDate);
+    }
+
+    currentDate.setDate(currentDate.getDate() + 1);
+
+    if (isWorkDay) {
+      for (let i = 1; i < countWorkDays; i += 1) {
+        if (currentDate <= endDate) {
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+      }
+    } else {
+      for (let i = 1; i < countOffDays; i += 1) {
+        if (currentDate <= endDate) {
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+      }
+    }
+
+    isWorkDay = !isWorkDay;
+  }
+
+  return workSchedule;
 }
 
 /**
