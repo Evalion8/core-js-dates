@@ -145,18 +145,24 @@ function isDateInPeriod(date, period) {
  * '1999-01-05T02:20:00.000Z' => '1/5/1999, 2:20:00 AM'
  * '2010-12-15T22:59:00.000Z' => '12/15/2010, 10:59:00 PM'
  */
-function formatDate(date) {
-  const d = new Date(date);
+function formatDate(dateString) {
+  const date = new Date(dateString);
 
-  const day = String(d.getUTCDate()).padStart(2, '0');
-  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
-  const year = String(d.getUTCFullYear()).slice(-2);
+  const month = date.getUTCMonth() + 1;
+  const day = date.getUTCDate();
+  const year = date.getUTCFullYear();
 
-  const hours = String(d.getUTCHours()).padStart(2, '0');
-  const minutes = String(d.getUTCMinutes()).padStart(2, '0');
-  const seconds = String(d.getUTCSeconds()).padStart(2, '0');
+  let hours = date.getUTCHours();
+  const minutes = date.getUTCMinutes();
+  const seconds = date.getUTCSeconds();
 
-  return `${day}/${month}/${year}, ${hours}:${minutes}:${seconds}`;
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours %= 12;
+  hours = hours === 0 ? 12 : hours;
+
+  const formattedDate = `${month}/${day}/${year}, ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} ${ampm}`;
+
+  return formattedDate;
 }
 
 /**
@@ -224,8 +230,19 @@ function getWeekNumberByDate(date) {
  * Date(2024, 0, 13) => Date(2024, 8, 13)
  * Date(2023, 1, 1) => Date(2023, 9, 13)
  */
-function getNextFridayThe13th(/* date */) {
-  throw new Error('Not implemented');
+function getNextFridayThe13th(date) {
+  const currentDate = new Date(date);
+
+  if (currentDate.getDate() > 13) {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+  }
+  currentDate.setDate(13);
+
+  while (currentDate.getDay() !== 5) {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    currentDate.setDate(13);
+  }
+  return new Date(currentDate);
 }
 
 /**
