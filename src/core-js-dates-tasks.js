@@ -283,38 +283,30 @@ function getQuarter(date) {
  * { start: '01-01-2024', end: '10-01-2024' }, 1, 1 => ['01-01-2024', '03-01-2024', '05-01-2024', '07-01-2024', '09-01-2024']
  */
 function getWorkSchedule(period, countWorkDays, countOffDays) {
-  const { start, end } = period;
-  const startDate = new Date(start.split('-').reverse().join('-'));
-  const endDate = new Date(end.split('-').reverse().join('-'));
-
   const workSchedule = [];
-  const currentDate = startDate;
-  let isWorkDay = true;
+  const [startDay, startMonth, startYear] = period.start.split('-').map(Number);
+  const [endDay, endMonth, endYear] = period.end.split('-').map(Number);
+
+  const startDate = new Date(startYear, startMonth - 1, startDay);
+  const endDate = new Date(endYear, endMonth - 1, endDay);
+
+  const currentDate = new Date(startDate);
+  let currentDayInCycle = 1;
 
   while (currentDate <= endDate) {
-    const formattedDate = currentDate.toLocaleDateString('en-GB');
+    if (currentDayInCycle <= countWorkDays) {
+      const day = String(currentDate.getDate()).padStart(2, '0');
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const year = currentDate.getFullYear();
+      workSchedule.push(`${day}-${month}-${year}`);
+    }
 
-    if (isWorkDay) {
-      workSchedule.push(formattedDate);
+    currentDayInCycle += 1;
+    if (currentDayInCycle > countWorkDays + countOffDays) {
+      currentDayInCycle = 1;
     }
 
     currentDate.setDate(currentDate.getDate() + 1);
-
-    if (isWorkDay) {
-      for (let i = 1; i < countWorkDays; i += 1) {
-        if (currentDate <= endDate) {
-          currentDate.setDate(currentDate.getDate() + 1);
-        }
-      }
-    } else {
-      for (let i = 1; i < countOffDays; i += 1) {
-        if (currentDate <= endDate) {
-          currentDate.setDate(currentDate.getDate() + 1);
-        }
-      }
-    }
-
-    isWorkDay = !isWorkDay;
   }
 
   return workSchedule;
